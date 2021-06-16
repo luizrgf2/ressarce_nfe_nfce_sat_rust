@@ -219,8 +219,8 @@ fn organizar(dir_xml:String,line_sped:&String, dir_sped: &String){
                 
                 criar_diretorios(mes_ano, ano,&dir_sped);
                 
-                let  dir_entrada = format!("{}/{}/{}",&path_padrao,mes_ano,"entrada");
-                let  dir_saida = format!("{}/{}/{}",&path_padrao,mes_ano,"saída");
+                let  dir_entrada = format!("{}/{}/{}",&path_padrao,mes_ano,"entradas");
+                let  dir_saida = format!("{}/{}/{}",&path_padrao,mes_ano,"saídas");
     
     
                 abrir_xml("0",dir_xml,dir_entrada,dir_saida,chave.to_string());
@@ -261,8 +261,8 @@ fn organizar(dir_xml:String,line_sped:&String, dir_sped: &String){
                 
                 criar_diretorios(mes_ano, ano,dir_sped);
                 
-                let  dir_entrada = format!("{}/{}/{}",&path_padrao,mes_ano,"entrada");
-                let  dir_saida = format!("{}/{}/{}",&path_padrao,mes_ano,"saída");
+                let  dir_entrada = format!("{}/{}/{}",&path_padrao,mes_ano,"entradas");
+                let  dir_saida = format!("{}/{}/{}",&path_padrao,mes_ano,"saídas");
     
     
                 abrir_xml("1",dir_xml,dir_entrada,dir_saida,chave.to_string());
@@ -291,8 +291,8 @@ fn organizar(dir_xml:String,line_sped:&String, dir_sped: &String){
                     
                     criar_diretorios(mes_ano, ano,dir_sped);
                     
-                    let  dir_entrada = format!("{}/{}/{}",&path_padrao,mes_ano,"entrada");
-                    let  dir_saida = format!("{}/{}/{}",&path_padrao,mes_ano,"saída");
+                    let  dir_entrada = format!("{}/{}/{}",&path_padrao,mes_ano,"entradas");
+                    let  dir_saida = format!("{}/{}/{}",&path_padrao,mes_ano,"saídas");
         
         
                     abrir_xml("1",dir_xml,dir_entrada,dir_saida,chave.to_string());
@@ -322,11 +322,11 @@ fn criar_diretorios(mes_ano:&str,ano:&str, dir_sped: &String){
 
     mover_sped(dir_sped, path_padrao.to_string());
     
-    let path_padrao = &format!("{}/{}",path_padrao,"entrada")[..];
+    let path_padrao = &format!("{}/{}",path_padrao,"entradas")[..];
     
     verificar_criar_dir(path_padrao);
     
-    let path_padrao = &format!("{}/{}/{}/{}","./organizado",ano,mes_ano,"saída")[..];
+    let path_padrao = &format!("{}/{}/{}/{}","./organizado",ano,mes_ano,"saídas")[..];
     
     verificar_criar_dir(path_padrao);
     
@@ -354,7 +354,6 @@ fn abrir_xml(tipo:&str,dir_xml:String,mut dir_entrada:String,mut dir_saida : Str
     dir_entrada = format!("{}/{}.xml",dir_entrada,chave);
     dir_saida = format!("{}/{}.xml",dir_saida,chave);
 
-
     if tipo == "0"{
         
         println!("{}", dir_entrada);
@@ -367,7 +366,7 @@ fn abrir_xml(tipo:&str,dir_xml:String,mut dir_entrada:String,mut dir_saida : Str
         println!("{}", dir_saida);
         
         let mut file_xml = fs::File::create(dir_saida).unwrap();
-
+        
         file_xml.write_all(texto.as_bytes()).unwrap();
 
     }
