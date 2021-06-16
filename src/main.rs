@@ -2,6 +2,6 @@ mod organizador;
 
 fn main() {
 
-    organizador::let_sped();
+    organizador::ler_sped();
 
 }
