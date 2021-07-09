@@ -18,11 +18,18 @@ fn name_file(dir:&String) ->String{
 
 fn create_dirs(mes: &String, ano: &String){
 
+
+    if ano == "2014"{
+
+        println!("")
+
+    }
+
     let path_atual = format!("./organizado/");
     
     if !Path::new(&path_atual).exists(){
 
-        fs::create_dir_all(&path_atual);
+        fs::create_dir_all(&path_atual).unwrap();
 
     }
 
@@ -30,7 +37,7 @@ fn create_dirs(mes: &String, ano: &String){
     
     if !Path::new(&path_atual).exists(){
 
-        fs::create_dir_all(&path_atual);
+        fs::create_dir_all(&path_atual).unwrap();
 
     }
 
@@ -38,7 +45,7 @@ fn create_dirs(mes: &String, ano: &String){
     
     if !Path::new(&path_atual).exists(){
 
-        fs::create_dir_all(&path_atual);
+        fs::create_dir_all(&path_atual).unwrap();
 
     }
 
@@ -47,7 +54,7 @@ fn create_dirs(mes: &String, ano: &String){
     
     if !Path::new(&path_atual).exists(){
 
-        fs::create_dir_all(&path_atual);
+        fs::create_dir_all(&path_atual).unwrap();
 
     }
 
@@ -56,7 +63,7 @@ fn create_dirs(mes: &String, ano: &String){
     
     if !Path::new(&path_atual).exists(){
 
-        fs::create_dir_all(&path_atual);
+        fs::create_dir_all(&path_atual).unwrap();
 
     }
 
@@ -193,6 +200,18 @@ fn pegar_data_xml(texto :&String) -> (String,String){
 
         ano = data[0..4].to_string();
         mes = data[4..6].to_string();
+
+
+        if mes.contains("-"){
+
+            mes = data[5..7].to_string()
+
+        }
+
+
+        if ano == "2014"{
+            println!("")
+        }
 
     }else{
 
