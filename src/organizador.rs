@@ -19,12 +19,6 @@ fn name_file(dir:&String) ->String{
 fn create_dirs(mes: &String, ano: &String){
 
 
-    if ano == "2014"{
-
-        println!("")
-
-    }
-
     let path_atual = format!("./organizado/");
     
     if !Path::new(&path_atual).exists(){
