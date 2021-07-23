@@ -35,7 +35,7 @@ fn create_dirs(mes: &String, ano: &String){
 
     }
 
-    let path_atual = format!("./organizado/{}/{}_{}",&ano,&mes,&ano);
+    let path_atual = format!("./organizado/{}/{} {}",&ano,&mes,&ano);
     
     if !Path::new(&path_atual).exists(){
 
@@ -44,7 +44,7 @@ fn create_dirs(mes: &String, ano: &String){
     }
 
     
-    let path_atual = format!("./organizado/{}/{}_{}/entradas",&ano,&mes,&ano);
+    let path_atual = format!("./organizado/{}/{} {}/entradas",&ano,&mes,&ano);
     
     if !Path::new(&path_atual).exists(){
 
@@ -53,7 +53,7 @@ fn create_dirs(mes: &String, ano: &String){
     }
 
 
-    let path_atual = format!("./organizado/{}/{}_{}/saídas",&ano,&mes,&ano);
+    let path_atual = format!("./organizado/{}/{} {}/saídas",&ano,&mes,&ano);
     
     if !Path::new(&path_atual).exists(){
 
@@ -203,9 +203,6 @@ fn pegar_data_xml(texto :&String) -> (String,String){
         }
 
 
-        if ano == "2014"{
-            println!("")
-        }
 
     }else{
 
@@ -249,7 +246,7 @@ pub fn abrir_xml(path : String, cnpj_empresa :String){
 
 
     //pegando diretorio para salvar o xml final
-    let mut path_final = format!("./organizado/{}/{}_{}",&ano,&mes,&ano);
+    let mut path_final = format!("./organizado/{}/{} {}",&ano,&mes,&ano);
 
     let name_file = name_file(&path);
 
@@ -342,7 +339,7 @@ fn abrir_sped(path:&String){
 
     create_dirs(&mes, &ano);
     
-    let path_padrao = format!("organizado/{}/{}_{}/sped.txt",ano,mes,ano);
+    let path_padrao = format!("organizado/{}/{} {}/sped.txt",ano,mes,ano);
 
     escrever_no_xml(&path_padrao, texto);
 
