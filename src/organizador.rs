@@ -1,377 +1,367 @@
-mod diretorio;
+use walkdir::WalkDir;
 use std::fs;
+use std::fs::File;
 use std::io::BufReader;
 use std::io::Read;
 use std::io::Write;
+use std::io::stdin;
 use std::path::Path;
 
-fn pegar_chave(linha :&str) -> String{
+fn name_file(dir:&String) ->String{
 
+    let nome = dir[dir.len()-48..dir.len()].to_string();
 
-    let verificafor_nfe_entrada = linha.contains("|C100|0|");
-    let verificafor_nfe_saida = linha.contains("|C100|1|");
-    let verificafor_sat = linha.contains("|C800|59|");
-    let mut chave = String::from("");
+    nome
 
-
-    if verificafor_nfe_entrada{
-
-
-        let lista_tmp :Vec<&str>= linha.split("|").collect();
-        chave = lista_tmp[9].to_string();
-        
-
-    }else if verificafor_nfe_saida{
-
-        let lista_tmp :Vec<&str>= linha.split("|").collect();
-        chave = lista_tmp[9].to_string();
-        
-
-    }else if verificafor_sat{
-
-        let lista_tmp :Vec<&str>= linha.split("|").collect();
-        chave = lista_tmp[11].to_string();
-        
-    };
-
-    chave
 
 }
 
-fn verificar_criar_dir(path:&str){
+fn create_dirs(mes: &String, ano: &String){
 
-    let path_atual = Path::new(path).exists();
 
-    if !path_atual{
+    let path_atual = format!("./organizado/");
+    
+    if !Path::new(&path_atual).exists(){
 
-        fs::create_dir(path).unwrap();
+        fs::create_dir_all(&path_atual).unwrap();
+
+    }
+
+    let path_atual = format!("./organizado/{}",&ano);
+    
+    if !Path::new(&path_atual).exists(){
+
+        fs::create_dir_all(&path_atual).unwrap();
+
+    }
+
+    let path_atual = format!("./organizado/{}/{} {}",&ano,&mes,&ano);
+    
+    if !Path::new(&path_atual).exists(){
+
+        fs::create_dir_all(&path_atual).unwrap();
+
+    }
+
+    
+    let path_atual = format!("./organizado/{}/{} {}/entradas",&ano,&mes,&ano);
+    
+    if !Path::new(&path_atual).exists(){
+
+        fs::create_dir_all(&path_atual).unwrap();
+
+    }
+
+
+    let path_atual = format!("./organizado/{}/{} {}/saídas",&ano,&mes,&ano);
+    
+    if !Path::new(&path_atual).exists(){
+
+        fs::create_dir_all(&path_atual).unwrap();
 
     }
 
 }
 
-fn ler_arquivo(path:&String) -> Vec<String>{
+fn verificando_entry(cnpj_emit:&String, cnpj_empresa:&str, tpnf:&str) -> String{
+
+    let mut entry = String::from("");
+
+    let verificando_cnpj = if cnpj_emit == cnpj_empresa{true}else{false};
+
+    if verificando_cnpj{
+
+        if tpnf == "0"{
+            entry = "0".to_string();
+        }else if tpnf == "1"{
+            entry = "1".to_string();
+        }else {
+            entry = "1".to_string();
+        }
+
+    }else{
+
+        if tpnf == "0"{
+            entry = "1".to_string();
+        }else if tpnf == "1"{
+            entry = "0".to_string();
+        }else {
+            entry = "1".to_string();
+        }
+    }
+
+    entry
 
 
-    let mut linhas = Vec::new();//variavel amazenara as linhas do sped
 
-    let file = fs::File::open(path).unwrap();
+}
 
+fn pegar_valor_no_texto(mut texto : &str, chave:String, chave2:String) -> String{
+
+    
+    let mut continuar = true;
+
+    if chave != chave2{
+
+        let tmp :Vec<&str> = texto.split(&chave).collect();
+
+
+        if tmp.len() == 1{
+            return String::from("");
+        }
+
+        texto= tmp[1];
+
+        
+
+    }
+    
+
+
+    if texto.contains(&format!("</{}>",chave2)) == false{
+        continuar = false;
+    } 
+
+
+    let mut texto_final = "".to_string();
+
+    if continuar == true{
+
+        let  result: Vec<&str> = texto.split(&chave).collect();
+        texto_final = if texto.contains(&chave){result[1][1..result[1].len()-2].to_string()}else{"".to_string()};
+        let  result: Vec<&str> = texto.split(&chave2).collect();
+        texto_final = if texto.contains(&chave2){result[1][1..result[1].len()-2].to_string()}else{"".to_string()};
+    };
+
+
+  
+    if texto_final.len() != 0 {
+
+        loop {
+            let valor :f32 =match texto_final.parse(){
+                
+                Ok(file)=>{
+                    
+
+                    if chave == "qCom" || chave == "vUnCom"{
+                        texto_final = format!("{:.4}",&file).replace(".", ",");
+                    }else if texto_final.contains("."){
+                        texto_final = format!("{:.2}",&file).replace(".", ",");
+
+                    };
+
+                    //texto_final =texto_final.replace(".", ",");
+
+                    
+
+                    file
+
+                    
+                },
+                Err(_)=>break
+
+
+
+            };
+
+            break;
+        }
+
+
+    };
+    
+    
+    texto_final
+
+
+}
+
+fn pegar_data_xml(texto :&String) -> (String,String){
+
+    let mut mes = String::from("");
+    let mut ano = String::from("");
+
+
+    let mut result = (mes,ano);
+    
+    
+    let mut data = pegar_valor_no_texto(&texto, "dhSaiEnt".to_string(),"dhSaiEnt".to_string());
+    
+    
+    if data == ""{
+        
+        data = pegar_valor_no_texto(&texto, "dSaiEnt".to_string(),"dSaiEnt".to_string());
+
+    }
+    
+    if data == ""{
+        
+        data = pegar_valor_no_texto(&texto, "dEmi".to_string(),"dEmi".to_string());
+
+    }
+    
+    if data == ""{
+
+
+        
+        data = pegar_valor_no_texto(&texto, "dhEmi".to_string(),"dhEmi".to_string());
+
+
+        ano = data[0..4].to_string();
+        mes = data[4..6].to_string();
+
+
+        if mes.contains("-"){
+
+            mes = data[5..7].to_string()
+
+        }
+
+
+
+    }else{
+
+        let temp = data.split("-").collect::<Vec<&str>>();
+
+        ano =temp[0].to_string();
+        mes = temp[1].to_string();
+
+
+    }
+
+    result = (mes,ano);
+
+    result
+
+}
+
+pub fn abrir_xml(path : String, cnpj_empresa :String){
+
+
+    println!("{}",&path);
+
+    let file = File::open(&path).unwrap();
+    let mut buferead = BufReader::new(file);
+    let mut texto = String::from("");//texto do arquivo xml
+    buferead.read_to_string(&mut texto).unwrap();
+
+    //pegando data
+    let data = pegar_data_xml(&texto);
+
+    let mes = data.0;
+    let ano = data.1;
+    
+    let cnpj_emit = pegar_valor_no_texto(&texto, "<emit".to_string(), "CNPJ".to_string()); //cnpj emitente dentro do xml
+    let tpnf = pegar_valor_no_texto(&texto, "<ide".to_string() , "tpNF".to_string()); //tpnf  dentro do xml
+
+
+    let entry = verificando_entry(&cnpj_emit, &cnpj_empresa, &tpnf); //arquivo entrada ou saida
+    
+    create_dirs(&mes, &ano); //criando os diretorios
+
+
+    //pegando diretorio para salvar o xml final
+    let mut path_final = format!("./organizado/{}/{} {}",&ano,&mes,&ano);
+
+    let name_file = name_file(&path);
+
+
+    if entry == "0"{
+        path_final = format!("{}/{}/{}",&path_final,"entradas",&name_file);
+    }else if entry == "1"{
+        path_final = format!("{}/{}/{}",&path_final,"saídas",&name_file);
+    };
+
+
+
+    escrever_no_xml(&path_final, texto);
+
+    
+
+
+
+
+
+
+
+
+
+    
+    
+
+
+}
+
+pub fn pegar_dirs(){
+
+    let mut cnpj_emit = String::from("");
+    
+    println!("Digite o cnpj da empresa :");
+    
+    stdin().read_line(&mut cnpj_emit).unwrap();
+
+    let dirs = WalkDir::new("./arquivos");
+
+
+    for dir in dirs{
+
+        let dir_atual = &dir.unwrap().path().display().to_string(); //diretorio atual
+
+
+        if dir_atual.contains(".xml"){
+
+
+            abrir_xml(dir_atual.to_string(), cnpj_emit.clone().replace("\r", "").replace("\n", ""));
+
+
+        }else if dir_atual.contains(".txt"){
+
+            abrir_sped(dir_atual);
+
+        };
+
+
+
+    }
+
+}
+
+fn escrever_no_xml(path : &String,texto:String){
+
+    let mut arquivo = fs::File::create(path).unwrap();
+
+    arquivo.write_all(texto.as_bytes()).unwrap();
+
+    
+   
+
+}
+
+fn abrir_sped(path:&String){
+
+    println!("sped dir {}",path);
+
+
+    let file = File::open(path).unwrap();
     let mut buferread = BufReader::new(file);
+    let mut bytes = Vec::new();
+    buferread.read_to_end(&mut bytes).unwrap();
+    let texto = format!("{}",String::from_utf8_lossy(&bytes));
 
-    let mut buffer = Vec::new();
 
-    buferread.read_to_end(&mut buffer).unwrap();
 
-    let texto = String::from_utf8_lossy(&buffer);
+    let data = texto.split("\n").collect::<Vec<&str>>()[0].split("|").collect::<Vec<&str>>()[4].to_string();
+    let mes = &data[2..4].to_string();
+    let ano = &data[4..].to_string();
 
-    if texto.len() != 0{
-
-        for linha in texto.lines(){
-            
-            if linha.contains("|C100|0|") == true || linha.contains("|C100|1|") == true || linha.contains("|C800|59|") == true{
-
-                linhas.push(linha.to_string());
-            }
-            
+    create_dirs(&mes, &ano);
     
-        }
+    let path_padrao = format!("organizado/{}/{} {}/sped.txt",ano,mes,ano);
 
-    }else {
-        
-        let mut texto = String::new();
-        buferread.read_to_string(&mut texto).unwrap();
+    escrever_no_xml(&path_padrao, texto);
 
-        let linhas_tmp: Vec<&str> = texto.split("\n").collect();
 
-        for linha in linhas_tmp{
 
-            if linha.contains("|C100|0|") == true || linha.contains("|C100|1|") == true || linha.contains("|C800|59|") == true{
-                
-                linhas.push(linha.to_string());
-
-            }
-
-        }
-
-    }
-
-
-    linhas
-
-
-
-}
-
-pub fn ler_sped(){
-
-    let diretorios = diretorio::pegar_xmls_speds();
-
-    let dirs_sped = diretorios.speds;
-    let dirs_xmls = diretorios.xmls;
-
-
-
-    for dir_sped in dirs_sped{
-
-
-
-
-        
-        
-
-        //abrindo o sped.txt
-        let linhas_sped = ler_arquivo(&dir_sped);
-        //analisando linha por linha do sped
-        for linha in linhas_sped{
-
-            //abrindo xmls
-
-
-            let linha = &linha;
-            for dir_xml in &dirs_xmls{
-
-                if dir_xml.contains(&pegar_chave(linha)){
-
-                    organizar(dir_xml.to_string(), &linha,&dir_sped)
-
-
-                }
-
-            }
-
-        }
-
-
-
-
-
-    }
-
-}
-
-fn mover_sped(sped_dir: &String, path_atual: String){
-
-    let mut linhas = String::new();
-
-    let file_atual = fs::File::open(sped_dir).unwrap();
-
-    let mut buferread = BufReader::new(file_atual);
-
-    let mut buffer = Vec::new();
-
-
-    buferread.read_to_end(&mut buffer).unwrap();
-
-    let texto = String::from_utf8_lossy(&buffer);
-
-    for linha in texto.lines(){
-
-
-        if linhas.len() == 0{
-
-            linhas = linha.to_string();
-            
-        }else{
-            
-            linhas.push_str(&format!("\n{}",linha.to_string()));
-
-        }
-
-    }
-
-
-    let mut file_atual  = fs::File::create(format!("{}/{}",path_atual,"sped.txt")).unwrap();
-
-    file_atual.write_all(linhas.as_bytes()).unwrap();
-
-}
-
-fn organizar(dir_xml:String,line_sped:&String, dir_sped: &String){
-
-    let verificador_nfe_entrada = line_sped.contains("|C100|0|");
-    let verificador_nfe_saida = line_sped.contains("|C100|1|");
-    let verificador_cfe = line_sped.contains("|C800|59|");
-
-
-
-    if verificador_nfe_entrada{
-
-
-        let line_atual:Vec<&str> = line_sped.split("|").collect();
-
-        let chave = pegar_chave(&line_sped);
-
-        if chave.len() != 0 {
-        let tipo_doc = line_atual[5];
-
-        if tipo_doc == "55" || tipo_doc == "65"{
-
-
-            let mes_ano =  &format!("{}_{}",&line_atual[11][2..4],&line_atual[11][4..8])[..];
-
-            let ano = &line_atual[11][4..];
-
-
-
-
-                let  path_padrao = format!("{}/{}","./organizado",ano);
-                
-                criar_diretorios(mes_ano, ano,&dir_sped);
-                
-                let  dir_entrada = format!("{}/{}/{}",&path_padrao,mes_ano,"entradas");
-                let  dir_saida = format!("{}/{}/{}",&path_padrao,mes_ano,"saídas");
-    
-    
-                abrir_xml("0",dir_xml,dir_entrada,dir_saida,chave.to_string());
-
-            };    
-            
-
-            
-        }
-
-
-    }else if verificador_nfe_saida{
-
-
-        let line_atual:Vec<&str> = line_sped.split("|").collect();
-
-
-        let tipo_doc = line_atual[5];
-
-        if tipo_doc == "55" || tipo_doc == "65"{
-            
-            let chave = pegar_chave(&line_sped);
-
-            if chave.len() != 0 {
-                let mes_ano =  &format!("{}_{}",&line_atual[11][2..4],&line_atual[11][4..8])[..];
-
-                let ano = &line_atual[11][4..];
-
-
-
-                //vrificar e criar diretorio raiz
-
-                
-
-            
-
-                let  path_padrao = format!("{}/{}","./organizado",ano);
-                
-                criar_diretorios(mes_ano, ano,dir_sped);
-                
-                let  dir_entrada = format!("{}/{}/{}",&path_padrao,mes_ano,"entradas");
-                let  dir_saida = format!("{}/{}/{}",&path_padrao,mes_ano,"saídas");
-    
-    
-                abrir_xml("1",dir_xml,dir_entrada,dir_saida,chave.to_string());
-
-            };    
-            
-        }
-        
-    }else if verificador_cfe{
-        
-                let line_atual:Vec<&str> = line_sped.split("|").collect();
-        
-
-                let chave = pegar_chave(&line_sped);
-
-                if chave.len() != 0 {
-        
-        
-                    let mes_ano =  &format!("{}_{}",&line_atual[5][2..4],&line_atual[5][4..8])[..];
-        
-                    let ano = &line_atual[5][4..];
-    
-
-    
-                    let  path_padrao = format!("{}/{}","./organizado",ano);
-                    
-                    criar_diretorios(mes_ano, ano,dir_sped);
-                    
-                    let  dir_entrada = format!("{}/{}/{}",&path_padrao,mes_ano,"entradas");
-                    let  dir_saida = format!("{}/{}/{}",&path_padrao,mes_ano,"saídas");
-        
-        
-                    abrir_xml("1",dir_xml,dir_entrada,dir_saida,chave.to_string());
-    
-                };    
-                
-
-    }
-    
-    
-
-}
-
-fn criar_diretorios(mes_ano:&str,ano:&str, dir_sped: &String){
-
-    let path_padrao = "./organizado";
-
-    verificar_criar_dir(path_padrao);
-
-    let path_padrao = &format!("{}/{}",path_padrao,ano)[..];
-    
-    verificar_criar_dir(path_padrao);
-    
-    let path_padrao = &format!("{}/{}",path_padrao,mes_ano)[..];
-    
-    verificar_criar_dir(path_padrao);
-
-    mover_sped(dir_sped, path_padrao.to_string());
-    
-    let path_padrao = &format!("{}/{}",path_padrao,"entradas")[..];
-    
-    verificar_criar_dir(path_padrao);
-    
-    let path_padrao = &format!("{}/{}/{}/{}","./organizado",ano,mes_ano,"saídas")[..];
-    
-    verificar_criar_dir(path_padrao);
-    
-
-
-}
-
-fn abrir_xml(tipo:&str,dir_xml:String,mut dir_entrada:String,mut dir_saida : String, chave:String){
-
-    let file_xml = match  fs::File::open(&dir_xml){
-        
-        Ok(file) => file,
-        Err(err)=> panic!("{}",err)
-    };
-    
-    
-    let mut bufferread = BufReader::new(file_xml);
-
-    let mut texto = String::new();
-
-    bufferread.read_to_string(&mut texto).unwrap();
-
-
-    
-    dir_entrada = format!("{}/{}.xml",dir_entrada,chave);
-    dir_saida = format!("{}/{}.xml",dir_saida,chave);
-
-    if tipo == "0"{
-        
-        println!("{}", dir_entrada);
-        let mut file_xml = fs::File::create(dir_entrada).unwrap();
-        
-        file_xml.write_all(texto.as_bytes()).unwrap();
-        
-    }else if tipo == "1"{
-        
-        println!("{}", dir_saida);
-        
-        let mut file_xml = fs::File::create(dir_saida).unwrap();
-        
-        file_xml.write_all(texto.as_bytes()).unwrap();
-
-    }
-
-    
 
 
 }

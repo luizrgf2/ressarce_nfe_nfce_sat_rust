@@ -1,7 +1,5 @@
 mod organizador;
-
 fn main() {
 
-    organizador::ler_sped();
-
+    let speds = organizador::pegar_dirs();
 }
