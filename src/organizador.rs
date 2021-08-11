@@ -185,11 +185,26 @@ fn pegar_data_xml(texto :&String) -> (String,String){
     let mut result = (mes,ano);
     
     
-    let data = pegar_valor_no_texto(&texto, "dhEmi".to_string(),"dhEmi".to_string());
+    let mut data = pegar_valor_no_texto(&texto, "dhSaiEnt".to_string(),"dhSaiEnt".to_string());
+    
+    
+    if data == ""{
+        
+        data = pegar_valor_no_texto(&texto, "dSaiEnt".to_string(),"dSaiEnt".to_string());
+
+    }
+    
+    if data == ""{
+        
+        data = pegar_valor_no_texto(&texto, "dEmi".to_string(),"dEmi".to_string());
+
+    }
     
     if data == ""{
 
-        let data = pegar_valor_no_texto(&texto, "dEmi".to_string(),"dEmi".to_string());
+
+        
+        data = pegar_valor_no_texto(&texto, "dhEmi".to_string(),"dhEmi".to_string());
 
 
         ano = data[0..4].to_string();
@@ -323,6 +338,8 @@ fn escrever_no_xml(path : &String,texto:String){
 }
 
 fn abrir_sped(path:&String){
+
+    println!("sped dir {}",path);
 
 
     let file = File::open(path).unwrap();
