@@ -6,12 +6,20 @@ use std::io::Read;
 use std::io::Write;
 use std::io::stdin;
 use std::path::Path;
+use std::error::Error;
+use std::env::consts::OS;
+
 
 fn name_file(dir:&String) ->String{
 
-    let nome = dir[dir.len()-48..dir.len()].to_string();
 
-    nome
+    let dir_reverso = dir.chars().rev().collect::<String>();
+    let verificador_os = if OS == "windows" {r"\"}else{"/"};
+
+    let nome_aux = dir_reverso.split(verificador_os).collect::<Vec<&str>>();
+
+    
+    nome_aux[0].chars().rev().collect::<String>()
 
 
 }
@@ -206,6 +214,9 @@ fn pegar_data_xml(texto :&String) -> (String,String){
         
         data = pegar_valor_no_texto(&texto, "dhEmi".to_string(),"dhEmi".to_string());
 
+        if data.len() == 0{
+            return (String::from("Nota Emitida Erroneamente"), String::from("Nota Emitida Erroneamente"));
+        };
 
         ano = data[0..4].to_string();
         mes = data[4..6].to_string();
@@ -240,10 +251,22 @@ pub fn abrir_xml(path : String, cnpj_empresa :String){
 
     println!("{}",&path);
 
-    let file = File::open(&path).unwrap();
-    let mut buferead = BufReader::new(file);
-    let mut texto = String::from("");//texto do arquivo xml
-    buferead.read_to_string(&mut texto).unwrap();
+
+    let mut texto = String::from("");
+
+
+    let tmp = ler_xml(&path);
+
+    if let Result::Err(_) = tmp{
+
+        texto = ler_xml_not_utf8(&path).unwrap()
+
+    }else {
+        texto = tmp.unwrap();
+    }
+    
+
+
 
     //pegando data
     let data = pegar_data_xml(&texto);
@@ -328,6 +351,7 @@ pub fn pegar_dirs(){
 
 fn escrever_no_xml(path : &String,texto:String){
 
+
     let mut arquivo = fs::File::create(path).unwrap();
 
     arquivo.write_all(texto.as_bytes()).unwrap();
@@ -363,5 +387,30 @@ fn abrir_sped(path:&String){
 
 
 
+
+}
+
+fn ler_xml(path:&str) -> Result<String,Box<dyn Error>>{
+
+    let mut file = fs::File::open(path)?;
+    let mut texto = String::from("");
+
+    file.read_to_string(&mut texto)?;
+
+    Ok(texto)
+
+}
+
+fn ler_xml_not_utf8(path:&str) -> Result<String,Box<dyn Error>>{
+
+    let mut file = fs::File::open(path)?;
+    let mut bytes = Vec::new();
+    file.read_to_end(&mut bytes)?;
+    let texto = String::from_utf8_lossy(&bytes);
+    let texto = format!("{}",texto);
+
+
+
+    Ok(texto)
 
 }
